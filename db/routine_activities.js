@@ -1,15 +1,20 @@
-const client = require('./client')
+const { createActivity, getActivityById } = require('./activities');
+const client = require('./client');
+const { createRoutine } = require('./routines');
 
 async function getRoutineActivityById(id){
 }
 
-async function addActivityToRoutine({
-  routineId,
-  activityId,
-  count,
-  duration,
-}) {
-    
+async function addActivityToRoutine({routineId, activityId, count, duration,}) {
+  try {
+    const createActivityRoutinePromise= routineId.map((routine)=> createActivity(routine.name, activityId.description))
+    await Promise.all(createActivityRoutinePromise);
+    return await getActivityById(id)
+
+  } catch (error) {
+    console.error(error)
+  }
+
 }
 
 async function getRoutineActivitiesByRoutine({id}) {
