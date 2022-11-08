@@ -1,3 +1,4 @@
+const { attachActivitiesToRoutines } = require('./activities');
 const client = require('./client');
 
 async function getRoutineById(id){
@@ -20,19 +21,18 @@ async function getRoutineById(id){
 }
 
 
-async function getRoutinesWithoutActivities(){
-}
+// async function getRoutinesWithoutActivities(){
+// } Nick said big NO NO
 
 async function getAllRoutines() {
   try{
-    const {rows: routineIds} = await client.query(`
-    SELECT id
-    FROM routines;
+    const {rows: results} = await client.query(`
+    SELECT routines.*, users.username AS "creatorName"
+    FROM routines
+    JOIN users ON routines."creatorId" = users.id
+    ;
     `);
-    console.log(routineIds, "this is routineIds")
-    const routines= await Promise.all(
-    routineIds.map((routine)=> getRoutineById(routine.id))
-    );
+    const routines = await attachActivitiesToRoutines(results)
     return routines;
   }catch(error){
     console.error(error);
@@ -82,15 +82,40 @@ async function createRoutine({creatorId, isPublic, name, goal}) {
   }
 }
 
-async function updateRoutine({id, ...fields}) {
+async function updateRoutine({id, ...field}) {
+  const setString = Object.keys(field).map((key,index) => `"${key}" = $${index + 1}`).join(',')
+
+  try {
+    await client.query(`
+      UPDATE routines
+      SET ${setString}
+      WHERE id = ${id}
+      RETURNING *;
+    `,Object.values(field));
+
+    const returnRoutine = await getRoutineById(id)
+
+    return returnRoutine
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 async function destroyRoutine(id) {
+  try {
+    const {rows: [routine]} = await client.query(`
+      DELETE FROM routines
+      WHERE id = ${id};
+    `);
+    return routine
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 module.exports = {
   getRoutineById,
-  getRoutinesWithoutActivities,
+  // getRoutinesWithoutActivities,
   getAllRoutines,
   getAllPublicRoutines,
   getAllRoutinesByUser,

@@ -5,11 +5,17 @@ const { createRoutine } = require('./routines');
 async function getRoutineActivityById(id){
 }
 
-async function addActivityToRoutine({routineId, activityId, count, duration,}) {
+async function addActivityToRoutine({routineId, activityId, count, duration}) {
   try {
-    const createActivityRoutinePromise= routineId.map((routine)=> createActivity(routine.name, activityId.description))
-    await Promise.all(createActivityRoutinePromise);
-    return await getActivityById(id)
+    const {rows: [routine_activity]} = await client.query(`
+    INSERT INTO routine_activities("routineId", "activityId",count, duration)
+    VALUES($1, $2, $3, $4)
+    ON CONFLICT ("routineId", "activityId") DO NOTHING
+    RETURNING *
+    `, [routineId, activityId, count, duration])
+
+    return routine_activity
+
 
   } catch (error) {
     console.error(error)
@@ -24,6 +30,15 @@ async function updateRoutineActivity ({id, ...fields}) {
 }
 
 async function destroyRoutineActivity(id) {
+  try {
+    const {rows: [routine_activity]} = await client.query(`
+      DELETE FROM routine_activities
+      WHERE id = ${id};
+    `);
+    return routine_activity
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 async function canEditRoutineActivity(routineActivityId, userId) {
