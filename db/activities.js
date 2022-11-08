@@ -7,6 +7,7 @@ async function getAllActivities() {
     SELECT id
     FROM activities;
     `);
+    console.log(activityIds, "this is activityIds")
     const activities= await Promise.all(
       activityIds.map((activity)=> getActivityById(activity.id))
     );
@@ -36,11 +37,19 @@ try {
 }
 
 async function getActivityByName(name) {
+    try {
+      const {rows: [activityIds]} = await client.query(`
+        SELECT id
+        FROM activities
+        WHERE name=$1 
+      `,[name])
+      console.log(activityIds, "this is activityIds")
+      const activities = await getActivityById(activityIds.id)
 
-}
-
-// select and return an array of all activities
-async function attachActivitiesToRoutines(routines) {
+      return activities
+    } catch (error) {
+      console.error(error)
+    }
 }
 
 // return the new activity
@@ -60,8 +69,24 @@ try {
 // don't try to update the id
 // do update the name and description
 // return the updated activity
-async function updateActivity({ id, ...fields }) {
+async function updateActivity({ id, ...field }) {
 
+  const setString = Object.keys(field).map((key,index) => `"${key}" = $${index + 1}`).join(',')
+
+  try {
+    await client.query(`
+      UPDATE activities
+      SET ${setString}
+      WHERE id = ${id}
+      RETURNING *;
+    `,Object.values(field));
+
+    const returnActivity = await getActivityById(id)
+
+    return returnActivity
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 

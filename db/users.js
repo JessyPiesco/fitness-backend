@@ -26,7 +26,6 @@ async function getUser({ username, password }) {
   }
   
   if(username && password){
-
   try {
     const singleUser = await getUserByUsername(username)
 
