@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 const { attachActivitiesToRoutines } = require('./activities');
 const { getUserByUsername } = require('./users');
 const client = require('./client');
@@ -22,8 +23,17 @@ async function getRoutineById(id){
 }
 
 
-// async function getRoutinesWithoutActivities(){
-// } Nick said big NO NO
+async function getRoutinesWithoutActivities(){
+  try {
+    const {rows} = await client.query(`
+    SELECT * FROM routines;
+    `);
+    return rows;
+  } catch (error) {
+    throw error
+  }
+
+} 
 
 async function getAllRoutines() {
   try{
@@ -59,6 +69,21 @@ async function getAllRoutinesByUser({username}) {
 }
 
 async function getPublicRoutinesByUser({username}) {
+  try{
+    const user = await getUserByUsername(username)
+    const {rows: results} = await client.query(`
+    SELECT routines.*, users.username AS "creatorName"
+    FROM routines
+    JOIN users ON routines."creatorId" = users.id
+    WHERE "creatorId"= $1 
+    AND "isPublic"=true
+    ;
+    `,[user.id]);
+    const routines = await attachActivitiesToRoutines(results)
+    return routines;
+  }catch(error){
+    console.error(error);
+  } 
 }
 
 async function getAllPublicRoutines() {
@@ -67,7 +92,7 @@ async function getAllPublicRoutines() {
     SELECT routines.*, users.username AS "creatorName"
     FROM routines
     JOIN users ON routines."creatorId" = users.id
-    WHERE ("isPublic" = true)
+    WHERE "isPublic" = true
     ;
     `);
     const routines = await attachActivitiesToRoutines(results)
@@ -78,6 +103,21 @@ async function getAllPublicRoutines() {
 }
 
 async function getPublicRoutinesByActivity({id}) {
+  try{
+    const {rows: results} = await client.query(`
+    SELECT routines.*, users.username AS "creatorName"
+    FROM routines
+    JOIN users ON routines."creatorId" = users.id
+    JOIN routine_activities ON routine_activities."routineId"= routines.id  
+    WHERE routine_activities."activityId"= $1 
+    AND routines."isPublic"=true
+    ;
+    `,[id]);
+    const routines = await attachActivitiesToRoutines(results)
+    return routines;
+  }catch(error){
+    console.error(error);
+  } 
 }
 
 async function createRoutine({creatorId, isPublic, name, goal}) {
@@ -133,7 +173,7 @@ async function destroyRoutine(id) {
 
 module.exports = {
   getRoutineById,
-  // getRoutinesWithoutActivities,
+  getRoutinesWithoutActivities,
   getAllRoutines,
   getAllPublicRoutines,
   getAllRoutinesByUser,

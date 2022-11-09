@@ -55,7 +55,6 @@ async function destroyRoutineActivity(id) {
       WHERE id = ${id}
       RETURNING *;
     `);
-    console.log(routine_activity, "HERE!")
     return routine_activity
   } catch (error) {
     console.error(error)
