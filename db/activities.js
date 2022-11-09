@@ -7,7 +7,6 @@ async function getAllActivities() {
     SELECT id
     FROM activities;
     `);
-    console.log(activityIds, "this is activityIds")
     const activities= await Promise.all(
       activityIds.map((activity)=> getActivityById(activity.id))
     );
@@ -41,7 +40,7 @@ async function getActivityByName(name) {
       const {rows: [activityIds]} = await client.query(`
         SELECT id
         FROM activities
-        WHERE name=$1 
+        WHERE name=$1
       `,[name])
       console.log(activityIds, "this is activityIds")
       const activities = await getActivityById(activityIds.id)

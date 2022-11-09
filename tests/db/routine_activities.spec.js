@@ -1,4 +1,4 @@
-/* 
+/*
 
 DO NOT CHANGE THIS FILE
 
@@ -24,7 +24,7 @@ const {
 
 
 describe("DB Routine Activities", () => {
- 
+
   let fakeActivity
   let fakeRoutine
   let routineActivityData
@@ -42,7 +42,7 @@ describe("DB Routine Activities", () => {
     }
   })
 
-  xdescribe("getRoutineActivityById", () => {
+  describe("getRoutineActivityById", () => {
     it("should return the routine activity by id", async () => {
       const fakeRoutineActivity = await createFakeRoutineActivity()
       const routineActivity = await getRoutineActivityById(
@@ -110,7 +110,7 @@ describe("DB Routine Activities", () => {
     })
   })
 
-  xdescribe("destroyRoutineActivity(id)", () => {
+  describe("destroyRoutineActivity(id)", () => {
     it("remove routine_activity from database", async () => {
       const fakeRoutineActivity = await createFakeRoutineActivity();
 
