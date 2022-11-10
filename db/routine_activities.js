@@ -1,6 +1,6 @@
-const { createActivity, getActivityById } = require('./activities');
+// const { createActivity, getActivityById } = require('./activities');
 const client = require('./client');
-const { createRoutine, getRoutineById } = require('./routines');
+// const { createRoutine, getRoutineById } = require('./routines');
 
 async function getRoutineActivityById(id){
   try {

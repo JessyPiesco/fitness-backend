@@ -1,5 +1,9 @@
 const express = require('express');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const router = express.Router();
+
+router.use(cors())
 
 // GET /api/activities/:activityId/routines
 
