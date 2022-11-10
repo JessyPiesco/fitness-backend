@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { getUserByUsername, createUser, } = require('../db');
+const { getUserByUsername, createUser, getUserById } = require('../db');
 const{ JWT_SECRET} = process.env
 router.use(cors())
 
@@ -80,12 +80,19 @@ router.post('/register', async (req, res, next) => {
             message: 'Thank you for signing up!',
             token
         });
-        console.log(token, "BYE BYE")
+        
     } catch ({name,message}) {
         next({name,message});
     }
 })
 // GET /api/users/me
+router.get('/', async (req, res) => {
+    const users = await getUserById()
+
+    res.send({
+        users
+    })
+})
 
 // GET /api/users/:username/routines
 
