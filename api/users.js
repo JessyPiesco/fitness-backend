@@ -2,13 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { getUserByUsername, createUser, getAllUsers } = require('../db');
-const token = jwt.sign({id: 1, username: 'albert'}, process.env.JWT_SECRET)
+const { getUserByUsername, createUser, } = require('../db');
+const{ JWT_SECRET} = process.env
 router.use(cors())
 
+router.use((req, res, next) => {
+    console.log("A request is being made to /users");
+    next();
+  });
 
 // POST /api/users/login
-router.post('./login', async (req, res, next) => {
+router.post('/login', async (req, res, next) => {
     const {username,password} = req.body;
 
     if (!username || !password) {
@@ -22,7 +26,11 @@ router.post('./login', async (req, res, next) => {
         const user = await getUserByUsername(username);
 
         if (user && user.password == password) {
-            res.send({message: "you're logged in!", token: token})
+        const token = jwt.sign({ id: user.id, username }, JWT_SECRET);
+            res.send({
+                user,
+                message: "you're logged in!",
+                token: token})
         } else {
             next({
                 name: "IncorrectCredentialError",
@@ -42,11 +50,21 @@ router.post('/register', async (req, res, next) => {
         const _user = await getUserByUsername(username)
 
         if (_user){
+            res.status(401)
             next({
                 name: "UserExistError",
-                message: "A user by that username already exists."
+                message: `User ${username} is already taken.`,
+                error: "duplicateUsername"
             })
+
         }
+       if(password.length<8){
+        next({
+            name:"password to short",
+            message:"Password Too Short!",
+            error:"passwordToShort"
+        })
+       }
 
         const user = await createUser({username, password})
 
@@ -58,6 +76,7 @@ router.post('/register', async (req, res, next) => {
         })
 
         res.send({
+            user,
             message: 'Thank you for signing up!',
             token
         });
