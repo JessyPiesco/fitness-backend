@@ -2,7 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { getUserByUsername, createUser, getUserById } = require('../db');
+const { getUserByUsername, createUser, getUserById, getAllRoutinesByUser } = require('../db');
+const { requireUser } = require('./utils');
+const { UserDoesNotExistError } = require('../errors');
 const{ JWT_SECRET} = process.env
 router.use(cors())
 
@@ -80,20 +82,40 @@ router.post('/register', async (req, res, next) => {
             message: 'Thank you for signing up!',
             token
         });
-        
+
     } catch ({name,message}) {
         next({name,message});
     }
 })
 // GET /api/users/me
-router.get('/', async (req, res) => {
-    const users = await getUserById()
+router.get('/me', requireUser, async (req, res, next) => {
+try {
+    res.send(req.user)
 
-    res.send({
-        users
-    })
+} catch (error) {
+    next(error)
+}
 })
-
 // GET /api/users/:username/routines
+router.get('/:username/routines', async (req, res, next)=>{
+    let{username}=req.params;
+    try {
+        const allRoutines= await getAllRoutinesByUser({username});
+        console.log(allRoutines)
+        const routines= allRoutines.filter(routine=>{
+            return routine.isPublic || routine.creatorId === req.user.id
+
+        })
+        res.send(routines)
+
+    } catch ({name, message, error}) {
+        next({
+            name:"NoRoutines",
+            message:"Nothing to grab",
+            error:"nothing found in username/routines"
+    })
+
+    }
+})
 
 module.exports = router;
