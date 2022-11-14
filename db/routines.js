@@ -103,7 +103,7 @@ async function getAllPublicRoutines() {
 }
 
 async function getPublicRoutinesByActivity({id}) {
-  console.log(id)
+
   try{
     const {rows: results} = await client.query(`
     SELECT routines.*, users.username AS "creatorName"
@@ -115,8 +115,7 @@ async function getPublicRoutinesByActivity({id}) {
     ;
     `,[id]);
     const routines = await attachActivitiesToRoutines(results)
-    console.log("results", results)
-    console.log("Routines", routines)
+  
     return routines;
   }catch(error){
     console.error(error);
