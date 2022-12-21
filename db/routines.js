@@ -115,7 +115,7 @@ async function getPublicRoutinesByActivity({id}) {
     ;
     `,[id]);
     const routines = await attachActivitiesToRoutines(results)
-  
+
     return routines;
   }catch(error){
     console.error(error);
@@ -152,7 +152,7 @@ async function updateRoutine({id, ...field}) {
 
     return returnRoutine
   } catch (error) {
-    console.error(error)
+    throw error
   }
 }
 
